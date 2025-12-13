@@ -284,18 +284,26 @@ Wenn du Formeln aussprichst, sage sie so wie ein Lehrer sie vorlesen würde:
       const remainingCount = examQuestions.length - completedQuestions.size
       return `${baseInstructions}
 
+KRITISCH WICHTIG - NIEMALS VERABSCHIEDEN:
+- Sage NIEMALS "Auf Wiedersehen", "Tschüss", "Bye", "See you" oder ähnliche Abschiedsformeln!
+- Du bist IMMER bereit für den Wissenstest
+- Wenn du Hintergrundgeräusche oder unklare Audio hörst, IGNORIERE sie und fahre mit dem Test fort
+- Beginne IMMER mit einer Begrüßung und der ersten Frage, egal was du vorher gehört hast
+
 PRÜFUNGSMODUS - WISSENSTEST:
 Du führst einen umfassenden Wissenstest durch. Es gibt ${examQuestions.length} Fragen insgesamt.
 Noch ${remainingCount} Fragen offen.
 
+DEINE ERSTE NACHRICHT MUSS SO AUSSEHEN:
+"Hallo Simon! Wir machen jetzt einen Wissenstest zu elektrischen Schaltungen. Ich stelle dir ${remainingCount} Fragen. Los geht's mit der ersten Frage: [FRAGE HIER]"
+
 ABLAUF:
-1. Stelle eine Frage aus der Liste unten (wähle zufällig, aber bevorzuge verschiedene Kategorien)
-2. Warte auf Simons Antwort
-3. Bewerte die Antwort:
+1. Warte auf Simons Antwort (er braucht Zeit zum Nachdenken!)
+2. Bewerte die Antwort:
    - Bei RICHTIGER Antwort: Lobe Simon kurz
    - Bei FALSCHER Antwort: Gib einen kurzen Hinweis und nenne die richtige Antwort
-4. Füge am Ende deiner Bewertung einen UNSICHTBAREN MARKER ein (siehe unten)
-5. Stelle dann die nächste Frage
+3. Füge am Ende deiner Bewertung einen UNSICHTBAREN MARKER ein (siehe unten)
+4. Stelle dann die nächste Frage
 
 SEHR WICHTIG - MARKER FÜR TRACKING:
 Nach jeder Bewertung musst du einen speziellen Marker einfügen, damit das System den Fortschritt tracken kann.
@@ -305,11 +313,11 @@ Format:
 - Bei richtiger Antwort: Füge ":::CORRECT:xxx:::" ein (xxx = Fragen-ID)
 - Bei falscher Antwort: Füge ":::WRONG:xxx:::" ein (xxx = Fragen-ID)
 
-Beispiel bei richtiger Antwort für Frage f1:
-"Super Simon, das ist richtig! :::CORRECT:f1::: Nächste Frage..."
+Beispiel bei richtiger Antwort für Frage ohm1:
+"Super Simon, das ist richtig! :::CORRECT:ohm1::: Nächste Frage..."
 
-Beispiel bei falscher Antwort für Frage l2:
-"Das war leider nicht ganz richtig. Die Antwort ist... :::WRONG:l2::: Weiter zur nächsten Frage..."
+Beispiel bei falscher Antwort für Frage reihe2:
+"Das war leider nicht ganz richtig. Die Antwort ist... :::WRONG:reihe2::: Weiter zur nächsten Frage..."
 
 Denk daran: Die Marker :::CORRECT:xxx::: und :::WRONG:xxx::: werden NICHT gesprochen, nur im Transkript angezeigt.
 
@@ -318,9 +326,7 @@ Stelle Fragen aus verschiedenen Kategorien abwechselnd: Formeln, Logik, Allgemei
 Wenn alle Fragen beantwortet sind, gratuliere Simon zum Abschluss des Tests.
 
 NOCH OFFENE FRAGEN:
-${getExamQuestionsString()}
-
-Beginne mit einer kurzen Begrüßung und erkläre Simon, dass ihr jetzt einen Wissenstest machen werdet. Stelle dann direkt die erste Frage.`
+${getExamQuestionsString()}`
     }
 
     // Standard-Modus
@@ -386,9 +392,12 @@ Beginne mit einer freundlichen Begrüßung an Simon und frage ihn, wobei du ihm 
       let dataChannelReady = false
 
       // Funktion um Begrüßung zu starten wenn alles bereit ist
+      let greetingStarted = false
       const tryStartGreeting = () => {
+        if (greetingStarted) return // Verhindere doppelten Start
         if (audioReady && dataChannelReady && dataChannelRef.current?.readyState === 'open') {
-          // Kurze zusätzliche Verzögerung für Stabilität
+          greetingStarted = true
+          // Längere Verzögerung für Stabilität - verhindert "bye bye" Probleme
           setTimeout(() => {
             if (dataChannelRef.current?.readyState === 'open') {
               dataChannelRef.current.send(JSON.stringify({
@@ -398,7 +407,7 @@ Beginne mit einer freundlichen Begrüßung an Simon und frage ihn, wobei du ihm 
                 },
               }))
             }
-          }, 300)
+          }, 800) // Erhöht von 300ms auf 800ms
         }
       }
 
