@@ -31,10 +31,12 @@ interface VoiceTutorProps {
   onNeedApiKey: () => void
 }
 
-type Topic = 'all' | 'ohm' | 'series' | 'parallel' | 'formulas' | 'exam'
+type Topic = 'all' | 'basics' | 'fractions' | 'ohm' | 'series' | 'parallel' | 'formulas' | 'exam'
 
 const topicLabels: Record<Topic, string> = {
   all: 'Alle Themen',
+  basics: 'Allgemeinwissen Strom',
+  fractions: 'Bruchrechnung',
   ohm: 'Ohmsches Gesetz',
   series: 'Reihenschaltung',
   parallel: 'Parallelschaltung',
@@ -50,6 +52,153 @@ Frage Simon aktiv nach seinen Schwächen oder starte mit einfachen Fragen zu:
 - Parallelschaltung (1/Rges = 1/R₁ + 1/R₂, U überall gleich, Iges = I₁ + I₂)
 - Kirchhoffsche Regeln (Knotenregel, Maschenregel)
 - Gemischte Schaltungen`,
+
+  fractions: `THEMA: Bruchrechnung - Alle wichtigen Grundlagen
+
+WICHTIGE THEMEN zum Abfragen (für 8. Klasse):
+
+1. GRUNDLAGEN - WAS IST EIN BRUCH?
+- Was ist ein Bruch? (Teil von einem Ganzen, z.B. 1/2 ist die Hälfte)
+- Was bedeutet der Zähler? (obere Zahl - wie viele Teile man hat)
+- Was bedeutet der Nenner? (untere Zahl - in wie viele Teile das Ganze geteilt ist)
+- Beispiel: 3/4 bedeutet "3 von 4 Teilen"
+- Was passiert wenn Zähler und Nenner gleich sind? (= 1, das Ganze)
+- Was passiert wenn der Zähler größer als der Nenner ist? (unechter Bruch, größer als 1)
+
+2. BRÜCHE ERWEITERN UND KÜRZEN
+- Was bedeutet Erweitern? (Zähler UND Nenner mit der gleichen Zahl multiplizieren)
+- Beispiel Erweitern: 1/2 = 2/4 = 3/6 = 4/8 (mit 2, 3, 4 erweitert)
+- Warum kann man erweitern? (Der Wert bleibt gleich! 1/2 = 2/4)
+- Was bedeutet Kürzen? (Zähler UND Nenner durch die gleiche Zahl teilen)
+- Beispiel Kürzen: 6/8 = 3/4 (durch 2 gekürzt)
+- Was ist ein vollständig gekürzter Bruch? (wenn man nicht mehr kürzen kann)
+- Wie findet man den größten gemeinsamen Teiler (ggT)? (zum Kürzen)
+
+3. BRÜCHE VERGLEICHEN
+- Wie vergleicht man Brüche mit gleichem Nenner? (größerer Zähler = größerer Bruch)
+- Beispiel: 3/5 > 2/5 (gleicher Nenner, 3 > 2)
+- Wie vergleicht man Brüche mit verschiedenen Nennern? (erweitern auf gemeinsamen Nenner)
+- Beispiel: 1/2 vs 2/5 → 5/10 vs 4/10 → 5/10 ist größer
+- Was ist ein Hauptnenner? (gemeinsames Vielfaches der Nenner)
+
+4. BRÜCHE ADDIEREN UND SUBTRAHIEREN
+- Regel: Man kann nur Brüche mit GLEICHEM Nenner addieren/subtrahieren!
+- Bei gleichem Nenner: Zähler addieren/subtrahieren, Nenner bleibt gleich
+- Beispiel Addition: 2/7 + 3/7 = 5/7
+- Beispiel Subtraktion: 5/8 - 2/8 = 3/8
+- Bei verschiedenen Nennern: ERST auf Hauptnenner erweitern, DANN rechnen
+- Beispiel: 1/2 + 1/3 → 3/6 + 2/6 = 5/6
+- Nach dem Rechnen: Ergebnis kürzen wenn möglich!
+
+5. BRÜCHE MULTIPLIZIEREN
+- Regel: Zähler mal Zähler, Nenner mal Nenner
+- Beispiel: 2/3 × 3/4 = (2×3)/(3×4) = 6/12 = 1/2 (gekürzt)
+- Tipp: VOR dem Multiplizieren kürzen (kreuzweise), dann wird's einfacher!
+- Beispiel kreuzweise kürzen: 2/3 × 3/4 → 2 und 4 durch 2, 3 und 3 kürzen → 1/2
+- Mit ganzen Zahlen: Ganze Zahl als Bruch schreiben (5 = 5/1)
+- Beispiel: 3/4 × 2 = 3/4 × 2/1 = 6/4 = 3/2 = 1½
+
+6. BRÜCHE DIVIDIEREN (GETEILT)
+- Regel: "Durch einen Bruch teilen = mit dem Kehrwert multiplizieren"
+- Was ist der Kehrwert? (Zähler und Nenner vertauschen)
+- Beispiel Kehrwert: Kehrwert von 2/3 ist 3/2
+- Beispiel Division: 2/3 : 4/5 = 2/3 × 5/4 = 10/12 = 5/6
+- Merksatz: "Geteilt durch einen Bruch? Kipp ihn um und mal ihn drauf!"
+- Mit ganzen Zahlen: 6 : 2/3 = 6/1 × 3/2 = 18/2 = 9
+
+7. DEZIMALZAHLEN UND BRÜCHE
+- Wie macht man aus einem Bruch eine Dezimalzahl? (Zähler durch Nenner teilen)
+- Beispiele: 1/2 = 0,5  |  1/4 = 0,25  |  3/4 = 0,75  |  1/10 = 0,1
+- Wie macht man aus einer Dezimalzahl einen Bruch?
+- Beispiel: 0,5 = 5/10 = 1/2  |  0,25 = 25/100 = 1/4
+- Wichtige Brüche kennen: 1/2 = 0,5  |  1/3 = 0,333...  |  1/4 = 0,25
+
+8. ANWENDUNGEN IN DER PHYSIK
+- Warum braucht man Bruchrechnung in Physik? (für Formeln, Berechnungen)
+- Parallelschaltung: 1/R_ges = 1/R₁ + 1/R₂ (Brüche addieren!)
+- Beispiel: 1/20 + 1/30 = 3/60 + 2/60 = 5/60 = 1/12 → R_ges = 12Ω
+- Verhältnisse: U₁/U₂ = R₁/R₂ (Spannungsteiler)
+- Umrechnen: 2/5 von 100Ω = (2×100)/5 = 200/5 = 40Ω
+
+ERKLÄRSTRATEGIE bei falschen Antworten:
+- Verwende Pizza, Kuchen oder Schokolade als Beispiele (visualisierbar für 13-14 Jährige)
+- Zeichne mit Worten: "Stell dir vor, du teilst eine Pizza in 4 Stücke..."
+- Zeige JEDEN Rechenschritt einzeln, nicht überspringen
+- Gib Eselsbrücken: "KV" = Kehrwert bei Division
+- Sei sehr geduldig - Bruchrechnung ist für viele schwierig!
+- Bei Fehlern: Erst loben was richtig war, dann korrigieren
+
+RECHENBEISPIELE stellen (abwechselnd):
+- Erweitern: "Erweitere 2/3 mit 4"
+- Kürzen: "Kürze 12/18 vollständig"
+- Vergleichen: "Was ist größer: 2/5 oder 3/8?"
+- Addition: "Rechne: 1/4 + 1/6"
+- Multiplikation: "Rechne: 2/3 × 3/4"
+- Division: "Rechne: 3/4 : 2/5"
+- Textaufgabe: "Simon hat 3/4 einer Pizza. Er isst 1/2 davon. Wie viel bleibt übrig?"
+
+Stelle Fragen abwechselnd zu allen Themenbereichen!
+Bei richtiger Antwort: Lobe und stelle nächste Frage.
+Bei falscher Antwort: Erkläre Schritt für Schritt mit Beispiel, dann Kontrollfrage stellen.`,
+
+  basics: `THEMA: Allgemeinwissen Strom - Grundlagen der Elektrizität
+
+WICHTIGE THEMEN zum Abfragen (für 8. Klasse):
+
+1. ELEKTRISCHER STROM - WAS IST DAS?
+- Was ist elektrischer Strom? (Bewegung von elektrischen Ladungen/Elektronen)
+- In welche Richtung fließt der Strom technisch? (von + nach -)
+- In welche Richtung bewegen sich die Elektronen? (von - nach +)
+- Was braucht man für einen Stromkreis? (Stromquelle, Verbraucher, Leitungen, geschlossener Kreis)
+
+2. LEITER UND ISOLATOREN
+- Was sind Leiter? (Materialien die Strom leiten)
+- Nenne Beispiele für gute Leiter! (Kupfer, Silber, Gold, Aluminium, Eisen, Graphit, Wasser mit Salz)
+- Was sind Isolatoren/Nichtleiter? (Materialien die KEINEN Strom leiten)
+- Nenne Beispiele für Isolatoren! (Gummi, Plastik, Holz trocken, Glas, Porzellan, Luft, destilliertes Wasser)
+- Warum leiten Metalle Strom? (freie Elektronen)
+- Warum werden Kabel mit Plastik ummantelt? (Isolation zum Schutz)
+
+3. STROMKREIS-KOMPONENTEN
+- Was ist eine Stromquelle? (Batterie, Netzteil, Generator - erzeugt Spannung)
+- Was ist ein Verbraucher? (Lampe, Motor, Widerstand - nutzt den Strom)
+- Was ist ein Schalter? (unterbricht/schließt den Stromkreis)
+- Was ist eine Sicherung? (schützt vor zu großem Strom)
+
+4. SPANNUNG UND STROMSTÄRKE (Grundverständnis)
+- Was ist Spannung? (elektrischer Druck/Antrieb, wie Wasserdruck)
+- Was ist Stromstärke? (wie viel Strom fließt, wie viel Wasser pro Zeit)
+- Welche Spannung haben Batterien? (z.B. AA-Batterie: 1,5V, 9V-Block: 9V)
+- Welche Spannung kommt aus der Steckdose? (230V in Deutschland - GEFÄHRLICH!)
+
+5. SICHERHEIT
+- Warum ist Strom gefährlich? (kann zu Verletzungen/Tod führen)
+- Ab welcher Spannung wird es gefährlich? (ab ca. 50V kann es kritisch werden)
+- Warum darf man nicht mit Wasser an elektrische Geräte? (Wasser leitet Strom)
+- Was macht eine Sicherung/FI-Schalter? (schaltet bei Fehler ab, schützt Menschen)
+
+6. STROMARTEN
+- Was ist Gleichstrom (DC)? (Strom fließt immer in eine Richtung, z.B. Batterie)
+- Was ist Wechselstrom (AC)? (Strom wechselt die Richtung, z.B. Steckdose)
+- Wo verwendet man Gleichstrom? (Batterien, USB, Handy, Auto)
+- Wo verwendet man Wechselstrom? (Steckdose, Stromnetz)
+
+7. ALLTAGSBEISPIELE
+- Warum leuchtet eine Glühbirne? (Strom fließt durch dünnen Draht, der heiß wird und leuchtet)
+- Wie funktioniert ein Schalter? (öffnet/schließt den Stromkreis)
+- Warum haben Vögel auf Stromleitungen keinen Stromschlag? (kein geschlossener Stromkreis, keine Spannungsdifferenz)
+- Was passiert bei einem Kurzschluss? (Strom fließt ohne Widerstand - SEHR GEFÄHRLICH!)
+
+ERKLÄRSTRATEGIE bei falschen Antworten:
+- Verwende einfache Vergleiche (z.B. Wasser-Analogie: Spannung = Druck, Strom = Wassermenge)
+- Gib Alltagsbeispiele die ein 13-14 Jähriger kennt
+- Erkläre das WARUM, nicht nur das WAS
+- Sei ermutigend: "Fast richtig! Lass mich das erklären..."
+- Baue Eselsbrücken ein
+
+Stelle Fragen abwechselnd zu allen Themenbereichen!
+Bei richtiger Antwort: Kurzes Lob und nächste Frage.
+Bei falscher Antwort: Gute, verständliche Erklärung mit Beispiel, dann weitermachen.`,
 
   ohm: `THEMA: Ohmsches Gesetz - Frage alles Relevante ab!
 

@@ -11,6 +11,24 @@ interface ClaudeResponse {
   content: Array<{ type: string; text: string }>
 }
 
+// English Listening Exercise Types
+export interface ListeningExercise {
+  id: string
+  text: string
+  questions: Array<{
+    question: string
+    answer: string
+  }>
+  gapFill: {
+    text: string
+    gaps: Array<{
+      position: number
+      answer: string
+      acceptableAnswers?: string[]
+    }>
+  }
+}
+
 async function callClaude(apiKey: string, messages: ClaudeMessage[], systemPrompt: string): Promise<string> {
   const response = await fetch(CLAUDE_API_URL, {
     method: 'POST',
@@ -114,7 +132,17 @@ export async function generateExercise(
     // Spezial: Verhältnisse
     { type: 'SPANNUNGSTEILER', desc: 'Berechne das Spannungsverhältnis U₁/U₂ und beide Teilspannungen', answers: 3, focus: 'Spannung' },
   ]
-  const randomVariant = questionVariants[Math.floor(Math.random() * questionVariants.length)]
+
+  // Bei gemischten Schaltungen: erweiterte Varianten mit fehlenden Widerständen
+  const mixedQuestionVariants = circuitType === 'mixed' ? [
+    ...questionVariants,
+    // NEU: Widerstand berechnen
+    { type: 'R_BERECHNEN', desc: 'Ein Widerstand fehlt - berechne den fehlenden Widerstand R_x aus gegebenen Größen', answers: 3, focus: 'Widerstand-Berechnung' },
+    { type: 'R_UNKNOWN', desc: 'Berechne einen unbekannten Widerstand R_x, dann R_ges und I_ges', answers: 3, focus: 'Widerstand-Berechnung' },
+    { type: 'R_AUS_U_I', desc: 'Berechne einen Widerstand R_x aus gegebener Spannung und Strom', answers: 2, focus: 'Widerstand-Berechnung' },
+  ] : questionVariants
+
+  const randomVariant = (circuitType === 'mixed' ? mixedQuestionVariants : questionVariants)[Math.floor(Math.random() * (circuitType === 'mixed' ? mixedQuestionVariants.length : questionVariants.length))]
 
   // Mindestanzahl Antworten je nach Schwierigkeit
   const minAnswers = { easy: 2, medium: 3, hard: 4 }[difficulty]
@@ -132,7 +160,17 @@ export async function generateExercise(
 
   const systemPrompt = `Du bist ein kreativer Physiklehrer für die 8. Klasse in Deutschland. Du erstellst abwechslungsreiche Übungsaufgaben zu elektrischen Schaltungen.
 Antworte IMMER in validem JSON-Format ohne zusätzlichen Text.
-WICHTIG: Jede Aufgabe muss EINZIGARTIG sein - variiere Werte, Einheiten, Fragestellung und Kontext!`
+WICHTIG: Jede Aufgabe muss EINZIGARTIG sein - variiere Werte, Einheiten, Fragestellung und Kontext!
+
+KRITISCHE ANFORDERUNG - RUNDE ZAHLEN:
+- Wähle Widerstandswerte so, dass die Ergebnisse MAXIMAL 2 Nachkommastellen haben
+- BESSER: Wähle Werte so, dass Ergebnisse OHNE Nachkommastellen herauskommen (ganze Zahlen)
+- Beispiel GUT: Bei 12V und 3Ω ergibt sich I = 4A (keine Nachkommastellen)
+- Beispiel SCHLECHT: Bei 13V und 7Ω ergibt sich I = 1,857... A (zu viele Nachkommastellen)
+- Bevorzuge "schöne" Widerstandswerte: 10, 20, 30, 40, 50, 60, 100, 150, 200, 300 Ohm
+- Bei Parallelschaltungen: Wähle Widerstände so, dass 1/R schöne Brüche ergeben
+- Beispiel für Parallelschaltung: R1=60Ω, R2=30Ω → R_ges=20Ω (glatt!)
+- Prüfe ALLE Ergebnisse - wenn mehr als 2 Nachkommastellen, wähle andere Werte!`
 
   // Verschiedene Prompts je nach Schaltungstyp
   let layoutExplanation = ''
@@ -271,6 +309,7 @@ Schwierigkeit: ${difficultyDescription[difficulty]}
    ${randomVariant.focus === 'Widerstand+Spannung' ? '→ Frage nach: R_ges (Ω) UND Teilspannungen (V)' : ''}
    ${randomVariant.focus === 'Strom+Spannung' ? '→ Frage nach: I_ges (A) UND Teilspannungen (V)' : ''}
    ${randomVariant.focus === 'Alles' ? '→ Frage nach: R_ges, I_ges, Teilspannungen UND Teilströme - alles gemischt!' : ''}
+   ${randomVariant.focus === 'Widerstand-Berechnung' ? '→ SPEZIAL: Ein Widerstand (z.B. R₂) ist UNBEKANNT und muss berechnet werden!\n   - Gib zusätzliche Infos: z.B. U₂=6V und I₂=0.3A, dann muss R₂ berechnet werden\n   - Oder: R_ges ist gegeben, ein Widerstand fehlt → rückwärts rechnen\n   - Im resistors Array: Setze den unbekannten Widerstand auf einen Platzhalter-Wert (wird nicht angezeigt)\n   - In der Aufgabenstellung: Erwähne welche Größen GEGEBEN sind um R_x zu berechnen' : ''}
 
 6. ANTWORT-EINHEIT (Umrechnung bei schweren Aufgaben!):
    Variiere die Einheiten: ${randomAnswerUnit.askIn}
@@ -289,6 +328,11 @@ Die Fragestellung MUSS variieren! Beispiele:
 - "Der Gesamtstrom beträgt X mA. Berechne die Teilströme."
 - "Bestimme alle Teilspannungen U₁, U₂ und U₃"
 - "Wie verhalten sich die Ströme I₁ und I₂ zueinander?"
+
+SPEZIAL bei Widerstand-Berechnung:
+- "An R₂ liegt eine Spannung von 6V an und es fließt ein Strom von 0,3A. Berechne R₂!"
+- "Der Gesamtwiderstand beträgt 150Ω. R₁ ist 100Ω. Berechne den fehlenden Widerstand R₂!"
+- "Durch R₃ fließen 0,2A bei 12V. Wie groß ist R₃?"
 
 === JSON-FORMAT ===
 {
@@ -322,6 +366,11 @@ Die Fragestellung MUSS variieren! Beispiele:
     // Beispiele für STROM:
     // { "id": "i_ges", "label": "Gesamtstrom I_ges", "unit": "mA", "correctValue": 80, "tolerance": 0.05 }
     // { "id": "i1", "label": "Strom I₁ durch R₁", "unit": "A", "correctValue": 0.08, "tolerance": 0.05 }
+
+    // Beispiele für WIDERSTAND-BERECHNUNG (fehlender Widerstand):
+    // { "id": "r2", "label": "Widerstand R₂", "unit": "Ω", "correctValue": 20, "tolerance": 0.05 }
+    // { "id": "r_ges", "label": "Gesamtwiderstand R_ges", "unit": "Ω", "correctValue": 120, "tolerance": 0.05 }
+    // { "id": "i_ges", "label": "Gesamtstrom I_ges", "unit": "A", "correctValue": 0.1, "tolerance": 0.05 }
   ]
 }
 
@@ -329,10 +378,19 @@ Die Fragestellung MUSS variieren! Beispiele:
 - Reihenschaltung: R_ges = R1 + R2, I überall gleich, U_n = I × R_n
 - Parallelschaltung: 1/R_ges = 1/R1 + 1/R2, U überall gleich, I_n = U / R_n
 - Einheiten: 1 kΩ = 1000 Ω, 1 mA = 0.001 A, 1 mV = 0.001 V
+- Ohmsches Gesetz: R = U / I (zum Berechnen fehlender Widerstände)
+
+BEISPIELE FÜR RUNDE ZAHLEN (bevorzugt verwenden!):
+✅ GUT: U=12V, R1=30Ω, R2=60Ω in Reihe → R_ges=90Ω, I=0.133A (2 Nachkommastellen OK)
+✅ BESSER: U=12V, R1=20Ω, R2=40Ω in Reihe → R_ges=60Ω, I=0.2A (1 Nachkommastelle)
+✅ PERFEKT: U=12V, R1=30Ω, R2=30Ω in Reihe → R_ges=60Ω, I=0.2A, U1=6V, U2=6V (alles glatt!)
+✅ PARALLEL: R1=60Ω, R2=30Ω parallel → 1/R_ges = 1/60 + 1/30 = 1/60 + 2/60 = 3/60 → R_ges=20Ω (perfekt!)
+❌ SCHLECHT: U=13V, R1=37Ω, R2=41Ω → führt zu krummen Zahlen mit vielen Nachkommastellen
 
 WICHTIG:
 - correctValue muss in der unit des requiredAnswer sein! (z.B. wenn unit="mA", dann correctValue in Milliampere)
 - Überprüfe deine Berechnungen DREIFACH!
+- Prüfe: Haben die Ergebnisse maximal 2 Nachkommastellen? Wenn nein → andere Werte wählen!
 - Gib NUR das JSON zurück, keinen anderen Text!`
 
   const response = await callClaude(apiKey, [{ role: 'user', content: userMessage }], systemPrompt)
@@ -675,4 +733,156 @@ Formuliere eine kurze, gesprochene Antwort. Wenn es eine nächste Frage gibt, st
   } catch {
     return isCorrect ? 'Richtig! Sehr gut!' : `Leider nicht ganz. ${feedback}`
   }
+}
+
+// English Listening Comprehension Answer Check Result
+export interface AnswerCheckResult {
+  isCorrect: boolean
+  feedback: string
+  spellingErrors: string[]
+  grammarErrors: string[]
+  encouragement: string
+}
+
+// Check English listening comprehension answer with AI
+export async function checkListeningAnswer(
+  apiKey: string,
+  question: string,
+  modelAnswer: string,
+  userAnswer: string
+): Promise<AnswerCheckResult> {
+  const systemPrompt = `You are an English teacher checking a 6th grade student's (Sara, 11-12 years old, 2nd year English) answer.
+
+CRITICAL: You must evaluate if the answer is CONTENT-WISE correct, even if there are minor spelling or grammar mistakes!
+
+Return valid JSON only, no additional text.`
+
+  const userMessage = `Question: "${question}"
+Model answer: "${modelAnswer}"
+Student's answer: "${userAnswer}"
+
+Evaluate Sara's answer:
+1. Is it CONTENT-WISE correct? (meaning is right, even if spelling/grammar has small errors)
+2. List any spelling errors (if any)
+3. List any grammar errors (if any)
+4. Give encouraging feedback
+
+Return JSON:
+{
+  "isCorrect": <true if content is right, false if content is wrong>,
+  "feedback": "<SHORT feedback in GERMAN explaining what was good/wrong - max 2 sentences>",
+  "spellingErrors": ["<word with error> → <correction>"],
+  "grammarErrors": ["<error description in German>"],
+  "encouragement": "<encouraging sentence in GERMAN>"
+}`
+
+  try {
+    const response = await callClaude(apiKey, [{ role: 'user', content: userMessage }], systemPrompt)
+    const jsonMatch = response.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('No valid JSON response received')
+    }
+    return JSON.parse(jsonMatch[0]) as AnswerCheckResult
+  } catch (error) {
+    console.error('Error checking answer:', error)
+    // Fallback
+    const isCorrect = userAnswer.trim().toLowerCase().includes(modelAnswer.trim().toLowerCase().substring(0, 10))
+    return {
+      isCorrect,
+      feedback: isCorrect ? 'Das sieht inhaltlich richtig aus!' : 'Die Antwort passt nicht ganz zur Frage.',
+      spellingErrors: [],
+      grammarErrors: [],
+      encouragement: 'Weiter so!'
+    }
+  }
+}
+
+// English Listening Comprehension Exercise Generation
+export async function generateListeningExercise(apiKey: string): Promise<ListeningExercise> {
+  const systemPrompt = `You are an English teacher creating listening comprehension exercises for Sara, a German 6th grade student (2nd year of English, Greenline 2 Unit 2 for Bavaria).
+
+CRITICAL REQUIREMENTS:
+1. Simple text (80-120 words) suitable for 6th graders (11-12 years old)
+2. Use SIMPLE vocabulary and grammar (A2 level, max early B1)
+3. 4 comprehension questions in SIMPLE English with short model answers
+4. Gap-fill with 5-6 gaps (not too many!)
+
+Topics MUST relate to Greenline 2 Unit 2 (6th grade level):
+- Daily routines (getting up, school, homework, free time)
+- School life and subjects
+- Simple hobbies (sports, reading, music)
+- Family and pets
+- Simple places (home, school, park, shops)
+
+IMPORTANT LANGUAGE REQUIREMENTS:
+- Use present simple tense primarily
+- Short, simple sentences (max 15 words per sentence)
+- Use relative clauses (who/which) - but keep them SIMPLE
+- Use comparative adjectives (bigger, smaller, better) - SIMPLE ones
+- NO complex vocabulary, NO idioms, NO phrasal verbs
+- Use words a 6th grader would know from Greenline 1-2
+
+GRAMMAR TO INCLUDE (keep simple!):
+- Present simple (I play, she goes)
+- Simple relative clauses (The boy who..., The book which...)
+- Basic comparatives (bigger than, faster than, better than)
+
+CRITICAL - GAP FILL FORMAT:
+- Create the gap-fill text by replacing COMPLETE WORDS with "___"
+- Mark EXACTLY where each "___" appears by counting characters from the start
+- Each gap should be a SINGLE WORD (not multiple words)
+- Make sure gaps test vocabulary, grammar forms, or relative pronouns
+
+Return valid JSON only, no additional text.`
+
+  const userMessage = `Create a new listening comprehension exercise about one of these 6TH GRADE topics:
+- Sara's typical school day
+- A simple story about a pet (dog, cat, hamster)
+- Weekend activities and hobbies
+- A description of Sara's family
+- A simple story about school friends
+
+REMEMBER: Keep it SIMPLE for 6th grade! Short sentences, easy words!
+
+JSON format:
+{
+  "id": "unique-id",
+  "text": "<SIMPLE text in English, 80-120 words, easy vocabulary - the ORIGINAL text WITHOUT any gaps>",
+  "questions": [
+    {
+      "question": "<SIMPLE question in English>",
+      "answer": "<short model answer in English>"
+    }
+  ],
+  "gapFill": {
+    "text": "<The SAME text as above, but with complete words replaced by exactly three underscores '___'>",
+    "gaps": [
+      {
+        "position": <character position where '___' starts in the gapFill.text>,
+        "answer": "<the missing word>",
+        "acceptableAnswers": ["<alternative spelling/form if applicable>"]
+      }
+    ]
+  }
+}
+
+EXAMPLE of correct gap-fill format:
+If original text is: "Sara has a dog. His name is Benny."
+Then gapFill.text should be: "Sara has a ___. His ___ is Benny."
+And gaps should be:
+[
+  { "position": 12, "answer": "dog", "acceptableAnswers": [] },
+  { "position": 22, "answer": "name", "acceptableAnswers": [] }
+]
+
+Use simple relative clauses (who/which) and basic comparative adjectives (bigger, faster, older) where natural!`
+
+  const response = await callClaude(apiKey, [{ role: 'user', content: userMessage }], systemPrompt)
+
+  const jsonMatch = response.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    throw new Error('No valid JSON response received')
+  }
+
+  return JSON.parse(jsonMatch[0]) as ListeningExercise
 }

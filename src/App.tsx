@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Settings, BookOpen, GraduationCap, Mic } from 'lucide-react'
+import { Settings, BookOpen, GraduationCap, Mic, Languages, Headphones } from 'lucide-react'
 import FormulaSheet from '@/components/FormulaSheet'
 import PracticeArea from '@/components/PracticeArea'
 import VoiceTutor from '@/components/VoiceTutor'
+import EnglishVoiceTutor from '@/components/EnglishVoiceTutor'
+import EnglishListening from '@/components/EnglishListening'
 import ApiKeyDialog from '@/components/ApiKeyDialog'
 
 function App() {
@@ -39,8 +41,8 @@ function App() {
               <GraduationCap className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Physik Schaltungen</h1>
-              <p className="text-sm text-gray-500">Lernapp für Reihen- und Parallelschaltungen · © Michael Ferschl 2025</p>
+              <h1 className="text-xl font-bold text-gray-900">Lernapp 8. Klasse</h1>
+              <p className="text-sm text-gray-500">Physik Schaltungen & English Greenline 2 · © Michael Ferschl 2025</p>
             </div>
           </div>
           {!hasEnvKeys && (
@@ -59,7 +61,7 @@ function App() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-6">
         <Tabs defaultValue="formulas" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="formulas" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Formeln</span>
@@ -71,6 +73,14 @@ function App() {
             <TabsTrigger value="practice" className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               <span className="hidden sm:inline">Übungen</span>
+            </TabsTrigger>
+            <TabsTrigger value="english-tutor" className="flex items-center gap-2">
+              <Languages className="h-4 w-4" />
+              <span className="hidden sm:inline">English Tutor</span>
+            </TabsTrigger>
+            <TabsTrigger value="english-listening" className="flex items-center gap-2">
+              <Headphones className="h-4 w-4" />
+              <span className="hidden sm:inline">Listening</span>
             </TabsTrigger>
           </TabsList>
 
@@ -84,6 +94,14 @@ function App() {
 
           <TabsContent value="practice">
             <PracticeArea apiKey={apiKey} onNeedApiKey={() => setShowSettings(true)} />
+          </TabsContent>
+
+          <TabsContent value="english-tutor">
+            <EnglishVoiceTutor openaiKey={openaiKey} onNeedApiKey={() => setShowSettings(true)} />
+          </TabsContent>
+
+          <TabsContent value="english-listening">
+            <EnglishListening apiKey={apiKey} onNeedApiKey={() => setShowSettings(true)} />
           </TabsContent>
         </Tabs>
       </main>
