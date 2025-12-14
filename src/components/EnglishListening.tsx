@@ -16,7 +16,7 @@ import {
   FileText,
   Loader2,
 } from 'lucide-react'
-import { generateListeningExercise, checkListeningAnswer, type ListeningExercise, type AnswerCheckResult } from '@/services/claude'
+import { generateListeningExercise, checkListeningAnswer, type ListeningExercise } from '@/services/claude'
 
 interface EnglishListeningProps {
   apiKey: string
@@ -35,7 +35,6 @@ export default function EnglishListening({ apiKey, onNeedApiKey }: EnglishListen
   const [exercise, setExercise] = useState<ListeningExercise | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentAudio] = useState<HTMLAudioElement | null>(null)
   const [isChecking, setIsChecking] = useState(false)
 
   // Question answers

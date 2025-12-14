@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Mic,
-  MicOff,
   Volume2,
   VolumeX,
   Play,
@@ -15,7 +14,6 @@ import {
   AlertCircle,
   XCircle,
 } from 'lucide-react'
-import { Progress } from '@/components/ui/progress'
 
 interface EnglishVoiceTutorProps {
   openaiKey: string
